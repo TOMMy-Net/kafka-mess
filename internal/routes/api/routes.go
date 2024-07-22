@@ -8,5 +8,5 @@ import (
 func SetupMessRoutes(r fiber.Router) {
 	api := r.Group("/message")
 	api.Get("/", handlers.GetMessage)
-	api.Post("/", handlers.SetMessage)
+	api.Post("/", handlers.SendMessage)
 }

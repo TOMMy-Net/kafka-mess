@@ -8,6 +8,7 @@ import (
 
 func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api", logger.New())
+	
 	apiRoutes.SetupMessRoutes(api)
 
 }
