@@ -1,8 +1,6 @@
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
 	id UUID NOT NULL UNIQUE,
 	message TEXT NOT NULL,
 	status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0, 1)),
 	PRIMARY KEY("id")
 );
-
-

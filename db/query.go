@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -16,6 +17,9 @@ import (
 
 var database *sqlx.DB
 
+var(
+	ErrBaseWrite = errors.New("error with data write")
+)
 func Connect() error {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
