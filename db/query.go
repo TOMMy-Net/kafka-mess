@@ -17,9 +17,10 @@ import (
 
 var database *sqlx.DB
 
-var(
+var (
 	ErrBaseWrite = errors.New("error with data write")
 )
+
 func Connect() error {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
@@ -31,7 +32,7 @@ func Connect() error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = migrateBase(data)
 	if err != nil {
 		return err
@@ -60,8 +61,8 @@ func migrateBase(db *sqlx.DB) error {
 func WriteMessage(ctx context.Context, message models.Message) (string, error) {
 	id := uuid.New().String()
 	_, err := database.NamedExecContext(ctx, "INSERT INTO messages (id, message, status) VALUES (:id, :text, :status)", map[string]interface{}{
-		"id": id,
-		"text": message.Text,
+		"id":     id,
+		"text":   message.Text,
 		"status": 0,
 	})
 	if err != nil {

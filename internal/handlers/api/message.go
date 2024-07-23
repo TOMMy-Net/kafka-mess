@@ -7,10 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-
 func GetMessage(c *fiber.Ctx) error {
 
-return nil
+	return nil
 }
 
 func SendMessage(c *fiber.Ctx) error {
@@ -23,9 +22,12 @@ func SendMessage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(render.Error{
 			Status: "error",
-			Error: db.ErrBaseWrite.Error(),
+			Error:  db.ErrBaseWrite.Error(),
 		})
 	}
 
-	return nil
+	return c.Status(fiber.StatusOK).JSON(render.Answer{
+		Status:  "ok",
+		Message: render.GoodMsg,
+	})
 }
