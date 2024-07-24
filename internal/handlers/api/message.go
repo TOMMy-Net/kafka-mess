@@ -16,8 +16,19 @@ func SendMessage(c *fiber.Ctx) error {
 	m := new(models.Message)
 
 	if err := c.BodyParser(m); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(render.Error{
+			Status: "error",
+			Error: err.Error(),
+		})
 	}
+
+	if err := models.ValidStruct(m); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(render.Error{
+			Status: "error",
+			Error: err.Error(),
+		})
+	}
+	
 	_, err := db.WriteMessage(c.Context(), *m)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(render.Error{

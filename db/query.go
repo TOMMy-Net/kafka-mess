@@ -55,6 +55,7 @@ func migrateBase(db *sqlx.DB) error {
 	}
 
 	m.Up()
+
 	return nil
 }
 
