@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetMessage(c *fiber.Ctx) error {
+func GetMessages(c *fiber.Ctx) error {
 
 	return nil
 }
@@ -35,6 +35,7 @@ func SendMessage(c *fiber.Ctx) error {
 			Status: "error",
 			Error:  db.ErrBaseWrite.Error(),
 		})
+		
 	}
 
 	return c.Status(fiber.StatusOK).JSON(render.Answer{

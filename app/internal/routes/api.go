@@ -1,4 +1,4 @@
-package api
+package routes
 
 import (
 	handlers "github.com/TOMMy-Net/kafka-mess/internal/handlers/api"
@@ -7,6 +7,6 @@ import (
 
 func SetupMessRoutes(r fiber.Router) {
 	api := r.Group("/message")
-	api.Get("/", handlers.GetMessage)
+	api.Get("/", handlers.GetMessages)
 	api.Post("/", handlers.SendMessage)
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/TOMMy-Net/kafka-mess/internal/kafka"
 	"github.com/TOMMy-Net/kafka-mess/internal/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -61,14 +62,35 @@ func migrateBase(db *sqlx.DB) error {
 
 func WriteMessage(ctx context.Context, message models.Message) (string, error) {
 	id := uuid.New().String()
-	_, err := database.NamedExecContext(ctx, "INSERT INTO messages (id, message, status) VALUES (:id, :text, :status)", map[string]interface{}{
+	tx, _ := database.Beginx()
+	defer tx.Commit()
+	_, err := tx.NamedExecContext(ctx, "INSERT INTO messages (uid, message, status) VALUES (:id, :text, :status)", map[string]interface{}{
 		"id":     id,
 		"text":   message.Text,
 		"status": 0,
 	})
 	if err != nil {
+		tx.Rollback()
 		return "", err
 	}
 
+	if err := kafka.SendMessage(message); err != nil {
+		tx.Rollback()
+		return "", err
+	}
+	m, err:= kafka.ReadMessage()
+	if err != nil{
+		return "", err
+	}
+	fmt.Println(m)
+
 	return id, nil
+}
+
+func UpdateMeesageStatus(ctx context.Context, id string, status int) error {
+	database.ExecContext(ctx, "UPDATE messages SET status = :status WHERE uid = :id", map[string]any{
+		"id":     id,
+		"status": status,
+	})
+	return nil
 }
