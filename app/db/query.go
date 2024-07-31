@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TOMMy-Net/kafka-mess/internal/kafka"
 	"github.com/TOMMy-Net/kafka-mess/internal/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -16,30 +15,33 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var database *sqlx.DB
+type Database struct {
+	*sqlx.DB
+}
 
 var (
-	ErrBaseWrite = errors.New("error with data write")
+	ErrBaseWrite  = errors.New("error with data write")
+	ErrWithSelect = errors.New("error with get data")
 )
 
-func Connect() error {
+func Connect() (*Database, error) {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASS")
 	name := os.Getenv("DB_NAME")
+	ssl := os.Getenv("SSL_MODE")
 
-	data, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, name))
+	data, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, name, ssl))
 	if err != nil {
-		return err
+		return &Database{}, err
 	}
 
 	err = migrateBase(data)
 	if err != nil {
-		return err
+		return &Database{}, err
 	}
-	database = data
-	return nil
+	return &Database{data}, nil
 }
 
 func migrateBase(db *sqlx.DB) error {
@@ -60,37 +62,56 @@ func migrateBase(db *sqlx.DB) error {
 	return nil
 }
 
-func WriteMessage(ctx context.Context, message models.Message) (string, error) {
-	id := uuid.New().String()
-	tx, _ := database.Beginx()
-	defer tx.Commit()
-	_, err := tx.NamedExecContext(ctx, "INSERT INTO messages (uid, message, status) VALUES (:id, :text, :status)", map[string]interface{}{
+func (d *Database) WriteMessage(ctx context.Context, message models.Message) (uuid.UUID, error) {
+	id := uuid.New()
+	_, err := d.NamedExecContext(ctx, "INSERT INTO messages (uid, message, status) VALUES (:id, :text, :status)", map[string]interface{}{
 		"id":     id,
 		"text":   message.Text,
 		"status": 0,
 	})
 	if err != nil {
-		tx.Rollback()
-		return "", err
+		return uuid.UUID{}, err
 	}
-
-	if err := kafka.SendMessage(message); err != nil {
-		tx.Rollback()
-		return "", err
-	}
-	m, err:= kafka.ReadMessage()
-	if err != nil{
-		return "", err
-	}
-	fmt.Println(m)
 
 	return id, nil
 }
 
-func UpdateMeesageStatus(ctx context.Context, id string, status int) error {
-	database.ExecContext(ctx, "UPDATE messages SET status = :status WHERE uid = :id", map[string]any{
-		"id":     id,
+func (d *Database) UpdateMeesageStatus(ctx context.Context, uid string, status int) error {
+	_, err := d.NamedExecContext(ctx, "UPDATE messages SET status = :status WHERE uid = :id", map[string]any{
+		"id":     uid,
 		"status": status,
 	})
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (d *Database) UnSendMessages(ctx context.Context) ([]models.Message, error) {
+	var mess []models.Message
+
+	err := d.SelectContext(ctx, &mess, "SELECT * FROM messages WHERE status = 0")
+	if err != nil {
+		return []models.Message{}, err
+	}
+	return mess, nil
+}
+
+func (d *Database) TotalMessages(ctx context.Context) ([]models.Message, error) {
+	var count []models.Message
+	err := d.SelectContext(ctx, &count, "SELECT * FROM messages")
+	if err != nil {
+		return []models.Message{}, err
+	}
+	return count, err
+}
+
+func (d *Database) CountMessages(ctx context.Context) (int, error) {
+	var count int
+	err := d.GetContext(ctx, &count, "SELECT COUNT(uid) FROM messages")
+	if err != nil {
+		return 0, err
+	}
+	return count, err
 }

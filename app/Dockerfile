@@ -5,6 +5,7 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 
+RUN CGO_ENABLED=0 GOOS=linux go build -o /api
 EXPOSE 8000
 
-CMD ["go", "run", "main.go"]
+CMD ["/api"]

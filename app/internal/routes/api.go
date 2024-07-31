@@ -5,8 +5,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupMessRoutes(r fiber.Router) {
+
+
+func SetupMessRoutes(r fiber.Router, handler *handlers.ApiHandlers) {
 	api := r.Group("/message")
-	api.Get("/", handlers.GetMessages)
-	api.Post("/", handlers.SendMessage)
+	api.Get("/", handler.GetMessages)
+	api.Post("/", handler.SendMessage)
+	api.Get("/stats", handler.GetStatsMessages)
 }
