@@ -31,9 +31,28 @@ func (b *Broker) ReadWithConfig(ch chan string) error {
 		ch <- string(msg.Value)
 
 	}
+	close(ch)
 	return nil
 }
 
-func (b *Broker) Read() {
+func (b *Broker) Read(ctx context.Context) (kafka.Message, error) {
+	var ch = make(chan kafka.Message)
+
+	go func() {
+		mess, err := b.Conn.ReadMessage(1024 * 5)
+		if err != nil {
+			ch <- kafka.Message{}
+			return
+		}
+		ch <- mess
+	}()
+	
+	select {
+		case <-ctx.Done():
+			return kafka.Message{}, ctx.Err()
+		case res := <- ch:
+			return res, nil
+		
+	}
 
 }

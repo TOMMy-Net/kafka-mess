@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/TOMMy-Net/kafka-mess/db"
 	"github.com/TOMMy-Net/kafka-mess/internal/kafka"
 	"github.com/TOMMy-Net/kafka-mess/internal/models"
@@ -18,8 +20,16 @@ func NewApi() *ApiHandlers {
 }
 
 func (a *ApiHandlers) GetMessages(c *fiber.Ctx) error {
+	mess, err := a.Kafka.Read(c.Context())
+	if err != nil {
+		render.SendServerError(c, kafka.ErrWithRead)
+	}
 
-	return nil
+	return c.Status(fiber.StatusOK).JSON(render.Answer{
+		Status:  "ok",
+		Message: fmt.Sprintf("Key: %s | Message: %s", mess.Key, mess.Value),
+	})
+
 }
 
 func (a *ApiHandlers) SendMessage(c *fiber.Ctx) error {
@@ -56,7 +66,7 @@ func (a *ApiHandlers) SendMessage(c *fiber.Ctx) error {
 		})
 	}
 
-	a.DB.UpdateMeesageStatus(c.Context(), mess.UID, 1)
+	a.DB.UpdateMessageStatus(c.Context(), mess.UID, 1)
 
 	return c.Status(fiber.StatusOK).JSON(render.Answer{
 		Status:  "ok",

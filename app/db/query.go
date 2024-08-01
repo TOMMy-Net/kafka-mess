@@ -76,7 +76,7 @@ func (d *Database) WriteMessage(ctx context.Context, message models.Message) (uu
 	return id, nil
 }
 
-func (d *Database) UpdateMeesageStatus(ctx context.Context, uid string, status int) error {
+func (d *Database) UpdateMessageStatus(ctx context.Context, uid string, status int) error {
 	_, err := d.NamedExecContext(ctx, "UPDATE messages SET status = :status WHERE uid = :id", map[string]any{
 		"id":     uid,
 		"status": status,
@@ -110,6 +110,15 @@ func (d *Database) TotalMessages(ctx context.Context) ([]models.Message, error) 
 func (d *Database) CountMessages(ctx context.Context) (int, error) {
 	var count int
 	err := d.GetContext(ctx, &count, "SELECT COUNT(uid) FROM messages")
+	if err != nil {
+		return 0, err
+	}
+	return count, err
+}
+
+func (d *Database) CountUnSend(ctx context.Context) (int, error) {
+	var count int
+	err := d.GetContext(ctx, &count, "SELECT COUNT(uid) FROM messages WHERE status = 0")
 	if err != nil {
 		return 0, err
 	}

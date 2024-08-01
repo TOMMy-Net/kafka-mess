@@ -14,9 +14,9 @@ func (b *Broker) SendMessage(message models.Message) error {
 	}
 
 	// Отправка сообщения
-	_, err := b.WriteMessages(msg)
+	_, err := b.Conn.WriteMessages(msg)
 	if err != nil {
-		b.Reconect(b.Topic, b.Partition)
+		
 		return err
 	}
 
@@ -25,9 +25,10 @@ func (b *Broker) SendMessage(message models.Message) error {
 
 func (b *Broker) WriteWithConfig(ctx context.Context, m models.Message) error {
 	// Создание производителя
+	
 	writer := &kafka.Writer{
-		Addr:  kafka.TCP(b.Hosts...),
-		Topic: b.Topic,
+		Addr:     kafka.TCP(b.Hosts...),
+		Topic:    b.Topic,
 		Balancer: &kafka.LeastBytes{},
 	}
 	defer writer.Close()

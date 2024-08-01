@@ -13,13 +13,13 @@ func (a *ApiHandlers) GetStatsMessages(c *fiber.Ctx) error {
 		return render.SendServerError(c, err)
 	}
 
-	unSend, err := a.DB.UnSendMessages(c.Context())
+	unSend, err := a.DB.CountUnSend(c.Context())
 	if err != nil {
 		return render.SendServerError(c, err)
 	}
 
 	stats.TotalMessages = count
-	stats.UnSendMessages = len(unSend)
+	stats.UnSendMessages = unSend
 	stats.SendMessages = stats.TotalMessages - stats.UnSendMessages
 
 	return c.Status(fiber.StatusOK).JSON(stats)

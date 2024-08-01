@@ -5,8 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-
-
 func SetupMessRoutes(r fiber.Router, handler *handlers.ApiHandlers) {
 	api := r.Group("/message")
 	api.Get("/", handler.GetMessages)

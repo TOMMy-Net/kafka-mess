@@ -4,8 +4,14 @@ meta {
   seq: 4
 }
 
-get {
+post {
   url: http://147.45.175.221:8000/api/message
-  body: none
+  body: json
   auth: none
+}
+
+body:json {
+  {
+    "text":"sdfsdf"
+  }
 }

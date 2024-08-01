@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/TOMMy-Net/kafka-mess/internal/kafka"
 	"github.com/TOMMy-Net/kafka-mess/internal/models"
 )
 
@@ -13,11 +14,11 @@ type BrokerSend interface {
 }
 
 type BaseUpdater interface {
-	UpdateMeesageStatus(ctx context.Context, uid string, status int) error
+	UpdateMessageStatus(ctx context.Context, uid string, status int) error
 	UnSendMessages(ctx context.Context) ([]models.Message, error)
 }
 
-func MessageKeeper(ctx context.Context, b BrokerSend, db BaseUpdater) {
+func MessageKeeper(ctx context.Context, b *kafka.Broker, db BaseUpdater) {
 	for {
 		<-time.After(10 * time.Second)
 		messages, err := db.UnSendMessages(ctx)
@@ -25,12 +26,12 @@ func MessageKeeper(ctx context.Context, b BrokerSend, db BaseUpdater) {
 			log.Println(err)
 			continue
 		}
-
-		for _, v := range messages {
-			if err := b.SendMessage(v); err != nil {
+		
+		for i := 0; i < len(messages); i++ {
+			if err := b.SendMessage(messages[i]); err != nil {
 				continue
 			}
-			db.UpdateMeesageStatus(ctx, v.UID, 1)
+			db.UpdateMessageStatus(ctx, messages[i].UID, 1)
 		}
 
 	}
