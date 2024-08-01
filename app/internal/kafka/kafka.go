@@ -55,6 +55,7 @@ func (b *Broker) ConectKeeper(ctx context.Context) {
 	}
 }
 
+
 func (b *Broker) ConnectKeeperV2() {
 	for {
 		<-time.After(2 * time.Second)
@@ -70,6 +71,7 @@ func (b *Broker) ConnectKeeperV2() {
 		}
 	}
 }
+
 
 func (b *Broker) Connect() {
 

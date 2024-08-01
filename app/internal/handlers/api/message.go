@@ -32,6 +32,7 @@ func (a *ApiHandlers) GetMessages(c *fiber.Ctx) error {
 
 }
 
+
 func (a *ApiHandlers) SendMessage(c *fiber.Ctx) error {
 	var mess models.Message
 

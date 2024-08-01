@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
 	"github.com/TOMMy-Net/kafka-mess/db"
 	"github.com/TOMMy-Net/kafka-mess/internal/handlers/api"
@@ -33,7 +32,7 @@ func main() {
 	}
 
 	go services.MessageKeeper(ctx, kafka, db) // keeper for un sended messages
-	go kafka.ConnectKeeperV2() // keeper for connect to kafka
+	go kafka.ConnectKeeperV2()                // keeper for connect to kafka
 
 	// init config for api
 	server := api.NewApi()
@@ -41,8 +40,7 @@ func main() {
 	server.Kafka = kafka
 
 	app := fiber.New(fiber.Config{
-		WriteTimeout: time.Millisecond*time.Duration(1),
-		ReadTimeout:  time.Second*time.Duration(1),
+	
 	})
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, this is api service for messaging to kafka !")

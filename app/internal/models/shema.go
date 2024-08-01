@@ -6,9 +6,6 @@ type Message struct {
 	Status int    `json:"status" db:"status"`
 }
 
-type Text struct {
-	Text string `json:"text" validate:"required,min=1"`
-}
 
 type MessageStats struct {
 	TotalMessages  int `json:"total_messages" db:"total_messages"`
