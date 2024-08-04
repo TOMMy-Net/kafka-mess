@@ -31,7 +31,7 @@ func MessageKeeper(ctx context.Context, b *kafka.Broker, db BaseUpdater) {
 		}
 
 		for i := 0; i < len(messages); i++ {
-			if err := b.SendMessage(messages[i]); err != nil {
+			if err := b.SendMessageSarama(messages[i]); err != nil {
 				continue
 			}
 			db.UpdateMessageStatus(ctx, messages[i].UID, 1)

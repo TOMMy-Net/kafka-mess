@@ -32,7 +32,6 @@ func (a *ApiHandlers) GetMessages(c *fiber.Ctx) error {
 
 }
 
-
 func (a *ApiHandlers) SendMessage(c *fiber.Ctx) error {
 	var mess models.Message
 
@@ -59,7 +58,7 @@ func (a *ApiHandlers) SendMessage(c *fiber.Ctx) error {
 	}
 	mess.UID = id.String()
 
-	err = a.Kafka.SendMessage(mess)
+	err = a.Kafka.SendMessageSarama( mess)
 	if err != nil {
 		return c.Status(fiber.StatusOK).JSON(render.Answer{
 			Status:  "ok",

@@ -15,6 +15,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
+
 type Database struct {
 	*sqlx.DB
 }
@@ -124,3 +126,5 @@ func (d *Database) CountUnSend(ctx context.Context) (int, error) {
 	}
 	return count, err
 }
+
+

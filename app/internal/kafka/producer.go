@@ -1,47 +1,22 @@
 package kafka
 
 import (
-	"context"
-
+	"github.com/IBM/sarama"
 	"github.com/TOMMy-Net/kafka-mess/internal/models"
-	"github.com/segmentio/kafka-go"
 )
 
-func (b *Broker) SendMessage(message models.Message) error {
-	msg := kafka.Message{
-		Value: []byte(message.Text),
-		Key:   []byte(message.UID),
+
+func (b *Broker) SendMessageSarama(message models.Message) error {
+	msg := &sarama.ProducerMessage{
+		Topic: b.Topic,
+		Key:   sarama.StringEncoder(message.UID),
+		Value: sarama.StringEncoder(message.Text),
 	}
 
-	// Отправка сообщения
-	_, err := b.Conn.WriteMessages(msg)
-	if err != nil {
-		
-		return err
-	}
-
-	return nil
-}
-
-func (b *Broker) WriteWithConfig(ctx context.Context, m models.Message) error {
-	// Создание производителя
-	
-	writer := &kafka.Writer{
-		Addr:     kafka.TCP(b.Hosts...),
-		Topic:    b.Topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-	defer writer.Close()
-
-	// Отправка сообщения
-	message := kafka.Message{
-		Value: []byte(m.Text),
-		Key:   []byte(m.UID),
-	}
-
-	err := writer.WriteMessages(ctx, message)
+	_, _, err := b.Producer.SendMessage(msg)
 	if err != nil {
 		return err
 	}
 	return nil
 }
+
